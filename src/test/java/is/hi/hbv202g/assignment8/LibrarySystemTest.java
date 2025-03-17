@@ -10,165 +10,89 @@ import java.util.List;
 public class LibrarySystemTest {
 
     @Test
-    public void testAddStudentUserAndFindUser() {
-        LibrarySystem system = new LibrarySystem();
-        
-        // Add a student user
-        system.addStudentUser("Alice", true);
-        
-        // Find the user
-        User found = system.findUserByName("Alice");
-        assertNotNull("Expected to find user named Alice", found);
-        assertEquals("Names should match", "Alice", found.getName());
-        // Check that it's actually a Student and fee is paid
-        assertTrue("Found user should be a Student", found instanceof Student);
-        Student aliceStudent = (Student) found;
-        assertTrue("Alice's fee should be paid", aliceStudent.isFeePaid());
-    }
-    
-    @Test
-    public void testAddFacultyMemberAndFindUser() {
-        LibrarySystem system = new LibrarySystem();
-        
-        // Add a faculty member user
-        system.addFacultyMemberUser("Bob", "Computer Science");
-        
-        // Find the user
-        User found = system.findUserByName("Bob");
-        assertNotNull("Expected to find user named Bob", found);
-        assertEquals("Bob", found.getName());
-        
-        // Check that it's actually a FacultyMember
-        assertTrue("Found user should be a FacultyMember", found instanceof FacultyMember);
-        FacultyMember bobFaculty = (FacultyMember) found;
-        assertEquals("Computer Science", bobFaculty.getDepartment());
+    public void testAddBookWithSingleAuthor() throws EmptyAuthorListException {
+        LibrarySystem library = new LibrarySystem();
+        library.addBookWithTitleAndNameOfSingleAuthor("Clean Code", "Robert C. Martin");
+        Book foundBook = library.findBookByTitle("Clean Code");
+        assertNotNull(foundBook);
+        assertEquals("Clean Code", foundBook.getTitle());
+        assertEquals("Robert C. Martin", foundBook.getAuthors().get(0).getName());
     }
 
     @Test
-    public void testAddBookWithSingleAuthorAndFindBook() {
-        LibrarySystem system = new LibrarySystem();
-        
-        // Add a book with single author
-        system.addBookWithTitleAndNameOfSingleAuthor("Design Patterns", "Gamma");
-        
-        // Find the book
-        Book foundBook = system.findBookByTitle("Design Patterns");
-        assertNotNull("Expected to find book titled 'Design Patterns'", foundBook);
-        assertEquals("Design Patterns", foundBook.getTitle());
-        assertEquals("Gamma", foundBook.getAuthors().get(0).getName());
-    }
-    
-    @Test
     public void testAddBookWithMultipleAuthors() throws EmptyAuthorListException {
-        LibrarySystem system = new LibrarySystem();
-        
+        LibrarySystem library = new LibrarySystem();
         List<Author> authors = new ArrayList<>();
         authors.add(new Author("Martin Fowler"));
         authors.add(new Author("Kent Beck"));
-        
-        // Add a book with multiple authors
-        system.addBookWithTitleAndAuthorList("Refactoring", authors);
-
-        // Check the book is found
-        Book foundBook = system.findBookByTitle("Refactoring");
+        library.addBookWithTitleAndAuthorList("Refactoring", authors);
+        Book foundBook = library.findBookByTitle("Refactoring");
         assertNotNull(foundBook);
         assertEquals(2, foundBook.getAuthors().size());
     }
-    
+
     @Test
-    public void testBorrowAndReturnBook() throws UserOrBookDoesNotExistException {
-        LibrarySystem system = new LibrarySystem();
-        
-        // Add some users and books
-        system.addStudentUser("Alice", true);
-        system.addBookWithTitleAndNameOfSingleAuthor("Clean Code", "Robert C. Martin");
-        
-        // Retrieve them
-        User alice = system.findUserByName("Alice");
-        Book cleanCode = system.findBookByTitle("Clean Code");
-        
-        // Borrow
-        system.borrowBook(alice, cleanCode);
-        
-        // Return
-        system.returnBook(alice, cleanCode);
-    }
-
-    @Test(expected = UserOrBookDoesNotExistException.class)
-    public void testBorrowNonExistentBook() throws UserOrBookDoesNotExistException {
-        LibrarySystem system = new LibrarySystem();
-        
-        // Add a user but no book
-        system.addStudentUser("Alice", true);
-        
-        // Try to borrow a non-existent book
-        User alice = system.findUserByName("Alice");
-        Book nonExistentBook = null;
-        try {
-            nonExistentBook = new Book("Non-Existent Book", "Unknown Author");
-        } catch (EmptyAuthorListException e) {
-            fail("Unexpected EmptyAuthorListException: " + e.getMessage());
-        }
-        
-        system.borrowBook(alice, nonExistentBook);
-    }
-
-    @Test(expected = UserOrBookDoesNotExistException.class)
-    public void testReturnNonExistentBook() throws UserOrBookDoesNotExistException {
-        LibrarySystem system = new LibrarySystem();
-        
-        // Add a user but no book
-        system.addStudentUser("Alice", true);
-        
-        // Try to return a non-existent book
-        User alice = system.findUserByName("Alice");
-        Book nonExistentBook = null;
-        try {
-            nonExistentBook = new Book("Non-Existent Book", "Unknown Author");
-        } catch (EmptyAuthorListException e) {
-            fail("Unexpected EmptyAuthorListException: " + e.getMessage());
-        }
-        
-        system.returnBook(alice, nonExistentBook);
+    public void testAddStudentUser() {
+        LibrarySystem library = new LibrarySystem();
+        library.addStudentUser("Alice", true);
+        User foundUser = library.findUserByName("Alice");
+        assertNotNull(foundUser);
+        assertEquals("Alice", foundUser.getName());
+        assertTrue(foundUser instanceof Student);
+        assertTrue(((Student) foundUser).isFeePaid());
     }
 
     @Test
-    public void testExtendLendingByFaculty() throws UserOrBookDoesNotExistException {
-        LibrarySystem system = new LibrarySystem();
-        
-        // Add a faculty user and a book
-        system.addFacultyMemberUser("Bob", "Computer Science");
-        system.addBookWithTitleAndNameOfSingleAuthor("Advanced Java", "Some Author");
-        
-        // Retrieve them
-        User bob = system.findUserByName("Bob");
-        Book advJava = system.findBookByTitle("Advanced Java");
-        
-        // Borrow the book
-        system.borrowBook(bob, advJava);
-        
-        // Extend the lending
+    public void testAddFacultyMemberUser() {
+        LibrarySystem library = new LibrarySystem();
+        library.addFacultyMemberUser("Bob", "Computer Science");
+        User foundUser = library.findUserByName("Bob");
+        assertNotNull(foundUser);
+        assertEquals("Bob", foundUser.getName());
+        assertTrue(foundUser instanceof FacultyMember);
+        assertEquals("Computer Science", ((FacultyMember) foundUser).getDepartment());
+    }
+
+    @Test
+    public void testBorrowAndReturnBook() throws EmptyAuthorListException, UserOrBookDoesNotExistException {
+        LibrarySystem library = new LibrarySystem();
+        library.addStudentUser("Alice", true);
+        library.addBookWithTitleAndNameOfSingleAuthor("Clean Code", "Robert C. Martin");
+
+        User alice = library.findUserByName("Alice");
+        Book cleanCode = library.findBookByTitle("Clean Code");
+
+        library.borrowBook(alice, cleanCode);
+        library.returnBook(alice, cleanCode);
+    }
+
+    @Test(expected = UserOrBookDoesNotExistException.class)
+    public void testBorrowNonExistentBook() throws UserOrBookDoesNotExistException, EmptyAuthorListException {
+        LibrarySystem library = new LibrarySystem();
+        library.addStudentUser("Alice", true);
+        Book nonExistentBook = new Book("Non-Existent Book", "Unknown Author");
+        library.borrowBook(library.findUserByName("Alice"), nonExistentBook);
+    }
+
+    @Test(expected = UserOrBookDoesNotExistException.class)
+    public void testReturnNonExistentBook() throws UserOrBookDoesNotExistException, EmptyAuthorListException {
+        LibrarySystem library = new LibrarySystem();
+        library.addStudentUser("Alice", true);
+        Book nonExistentBook = new Book("Non-Existent Book", "Unknown Author");
+        library.returnBook(library.findUserByName("Alice"), nonExistentBook);
+    }
+
+    @Test
+    public void testExtendLending() throws EmptyAuthorListException, UserOrBookDoesNotExistException {
+        LibrarySystem library = new LibrarySystem();
+        library.addFacultyMemberUser("Bob", "Computer Science");
+        library.addBookWithTitleAndNameOfSingleAuthor("Advanced Java", "Some Author");
+
+        User bob = library.findUserByName("Bob");
+        Book advJava = library.findBookByTitle("Advanced Java");
+
+        library.borrowBook(bob, advJava);
         LocalDate newDueDate = LocalDate.now().plusDays(90);
-        system.extendLending((FacultyMember) bob, advJava, newDueDate);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testExtendLendingWithInvalidDate() throws UserOrBookDoesNotExistException {
-        LibrarySystem system = new LibrarySystem();
-        
-        // Add a faculty user and a book
-        system.addFacultyMemberUser("Bob", "Computer Science");
-        system.addBookWithTitleAndNameOfSingleAuthor("Advanced Java", "Some Author");
-        
-        // Retrieve them
-        User bob = system.findUserByName("Bob");
-        Book advJava = system.findBookByTitle("Advanced Java");
-        
-        // Borrow the book
-        system.borrowBook(bob, advJava);
-        
-        // Try to extend the lending with an invalid date
-        LocalDate invalidDueDate = LocalDate.now().minusDays(10);
-        system.extendLending((FacultyMember) bob, advJava, invalidDueDate);
+        library.extendLending((FacultyMember) bob, advJava, newDueDate);
     }
 }

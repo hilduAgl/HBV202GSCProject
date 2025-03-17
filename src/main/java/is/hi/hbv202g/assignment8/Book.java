@@ -1,14 +1,13 @@
 package is.hi.hbv202g.assignment8;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 public class Book {
-    // -title: String
     private String title;
-    private List<Author> authors; // 1..n authors
+    private List<Author> authors;
 
-    // +Book(String title, String authorName): ctor
+    // Constructor with single author
     public Book(String title, String authorName) throws EmptyAuthorListException {
         if (authorName == null || authorName.trim().isEmpty()) {
             throw new EmptyAuthorListException("Author name cannot be empty.");
@@ -18,22 +17,28 @@ public class Book {
         this.authors.add(new Author(authorName));
     }
 
-    // +Book(String title, List<Author> authors): ctor
+    // Constructor with list of authors
     public Book(String title, List<Author> authors) throws EmptyAuthorListException {
         if (authors == null || authors.isEmpty()) {
             throw new EmptyAuthorListException("Author list cannot be empty.");
         }
         this.title = title;
-        // Store a copy or directly assign the incoming list.
         this.authors = new ArrayList<>(authors);
     }
 
-    // +getAuthors(): List<Author>
+    // Getters and setters
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public List<Author> getAuthors() {
         return authors;
     }
 
-    // +setAuthors(List<Author> authors): void
     public void setAuthors(List<Author> authors) throws EmptyAuthorListException {
         if (authors == null || authors.isEmpty()) {
             throw new EmptyAuthorListException("Author list cannot be empty.");
@@ -41,21 +46,10 @@ public class Book {
         this.authors = new ArrayList<>(authors);
     }
 
-    // +addAuthor(Author author): void
     public void addAuthor(Author author) {
         if (this.authors == null) {
             this.authors = new ArrayList<>();
         }
         this.authors.add(author);
-    }
-
-    // +getTitle(): String
-    public String getTitle() {
-        return title;
-    }
-
-    // +setTitle(String title): void
-    public void setTitle(String title) {
-        this.title = title;
     }
 }

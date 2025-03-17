@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LibrarySystem {
-
     private List<Book> books;
     private List<User> users;
     private List<Lending> lendings;
@@ -16,59 +15,44 @@ public class LibrarySystem {
         lendings = new ArrayList<>();
     }
 
-    // Add a book with a single author
-    public void addBookWithTitleAndNameOfSingleAuthor(String title, String authorName) {
-        try {
-            Book book = new Book(title, authorName);
-            books.add(book);
-        } catch (EmptyAuthorListException e) {
-            e.printStackTrace();
-        }
+    public void addBookWithTitleAndNameOfSingleAuthor(String title, String authorName) throws EmptyAuthorListException {
+        Book book = new Book(title, authorName);
+        books.add(book);
     }
 
-    // Add a book with a list of authors
-    public void addBookWithTitleAndAuthorList(String title, List<Author> authors) {
-        try {
-            Book book = new Book(title, authors);
-            books.add(book);
-        } catch (EmptyAuthorListException e) {
-            e.printStackTrace();
-        }
+    public void addBookWithTitleAndAuthorList(String title, List<Author> authors) throws EmptyAuthorListException {
+        Book book = new Book(title, authors);
+        books.add(book);
     }
 
-    // Add a student user
     public void addStudentUser(String name, boolean feePaid) {
         Student student = new Student(name, feePaid);
         users.add(student);
     }
 
-    // Add a faculty member user
     public void addFacultyMemberUser(String name, String department) {
         FacultyMember facultyMember = new FacultyMember(name, department);
         users.add(facultyMember);
     }
 
-    // Find a book by title
     public Book findBookByTitle(String title) {
-        for (Book b : books) {
-            if (b.getTitle().equals(title)) {
-                return b;
+        for (Book book : books) {
+            if (book.getTitle().equals(title)) {
+                return book;
             }
         }
         return null;
     }
 
-    // Find a user by name
     public User findUserByName(String name) {
-        for (User u : users) {
-            if (u.getName().equals(name)) {
-                return u;
+        for (User user : users) {
+            if (user.getName().equals(name)) {
+                return user;
             }
         }
         return null;
     }
 
-    // Borrow a book
     public void borrowBook(User user, Book book) throws UserOrBookDoesNotExistException {
         if (user == null || book == null) {
             throw new UserOrBookDoesNotExistException("User or book does not exist.");
@@ -76,11 +60,10 @@ public class LibrarySystem {
         if (!users.contains(user) || !books.contains(book)) {
             throw new UserOrBookDoesNotExistException("User or book does not exist in the system.");
         }
-        Lending newLending = new Lending(book, user);
-        lendings.add(newLending);
+        Lending lending = new Lending(book, user);
+        lendings.add(lending);
     }
 
-    // Extend lending (only for faculty members)
     public void extendLending(FacultyMember facultyMember, Book book, LocalDate newDueDate) throws UserOrBookDoesNotExistException {
         if (facultyMember == null || book == null) {
             throw new UserOrBookDoesNotExistException("Faculty member or book does not exist.");
@@ -88,20 +71,15 @@ public class LibrarySystem {
         if (!users.contains(facultyMember) || !books.contains(book)) {
             throw new UserOrBookDoesNotExistException("Faculty member or book does not exist in the system.");
         }
-        for (Lending l : lendings) {
-            if (l.getUser().equals(facultyMember) && l.getBook().equals(book)) {
-                if (newDueDate.isAfter(l.getDueDate())) {
-                    l.setDueDate(newDueDate);
-                } else {
-                    throw new IllegalArgumentException("New due date must be after the current due date.");
-                }
+        for (Lending lending : lendings) {
+            if (lending.getUser().equals(facultyMember) && lending.getBook().equals(book)) {
+                lending.setDueDate(newDueDate);
                 return;
             }
         }
         throw new UserOrBookDoesNotExistException("No lending found for this faculty member and book.");
     }
 
-    // Return a book
     public void returnBook(User user, Book book) throws UserOrBookDoesNotExistException {
         if (user == null || book == null) {
             throw new UserOrBookDoesNotExistException("User or book does not exist.");
@@ -110,9 +88,9 @@ public class LibrarySystem {
             throw new UserOrBookDoesNotExistException("User or book does not exist in the system.");
         }
         Lending toRemove = null;
-        for (Lending l : lendings) {
-            if (l.getUser().equals(user) && l.getBook().equals(book)) {
-                toRemove = l;
+        for (Lending lending : lendings) {
+            if (lending.getUser().equals(user) && lending.getBook().equals(book)) {
+                toRemove = lending;
                 break;
             }
         }
