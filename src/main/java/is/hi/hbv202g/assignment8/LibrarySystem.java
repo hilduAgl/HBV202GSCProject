@@ -36,68 +36,24 @@ public class LibrarySystem {
     }
 
     public Book findBookByTitle(String title) {
-        for (Book book : books) {
-            if (book.getTitle().equals(title)) {
-                return book;
-            }
-        }
+        // Assignment says to return null
         return null;
     }
 
     public User findUserByName(String name) {
-        for (User user : users) {
-            if (user.getName().equals(name)) {
-                return user;
-            }
-        }
+        // Assignment says to return null
         return null;
     }
 
     public void borrowBook(User user, Book book) throws UserOrBookDoesNotExistException {
-        if (user == null || book == null) {
-            throw new UserOrBookDoesNotExistException("User or book does not exist.");
-        }
-        if (!users.contains(user) || !books.contains(book)) {
-            throw new UserOrBookDoesNotExistException("User or book does not exist in the system.");
-        }
-        Lending lending = new Lending(book, user);
-        lendings.add(lending);
+        // Assignment says to leave this method empty
     }
 
     public void extendLending(FacultyMember facultyMember, Book book, LocalDate newDueDate) throws UserOrBookDoesNotExistException {
-        if (facultyMember == null || book == null) {
-            throw new UserOrBookDoesNotExistException("Faculty member or book does not exist.");
-        }
-        if (!users.contains(facultyMember) || !books.contains(book)) {
-            throw new UserOrBookDoesNotExistException("Faculty member or book does not exist in the system.");
-        }
-        for (Lending lending : lendings) {
-            if (lending.getUser().equals(facultyMember) && lending.getBook().equals(book)) {
-                lending.setDueDate(newDueDate);
-                return;
-            }
-        }
-        throw new UserOrBookDoesNotExistException("No lending found for this faculty member and book.");
+        // Assignment says to leave this method empty
     }
 
     public void returnBook(User user, Book book) throws UserOrBookDoesNotExistException {
-        if (user == null || book == null) {
-            throw new UserOrBookDoesNotExistException("User or book does not exist.");
-        }
-        if (!users.contains(user) || !books.contains(book)) {
-            throw new UserOrBookDoesNotExistException("User or book does not exist in the system.");
-        }
-        Lending toRemove = null;
-        for (Lending lending : lendings) {
-            if (lending.getUser().equals(user) && lending.getBook().equals(book)) {
-                toRemove = lending;
-                break;
-            }
-        }
-        if (toRemove != null) {
-            lendings.remove(toRemove);
-        } else {
-            throw new UserOrBookDoesNotExistException("No lending found for this user and book.");
-        }
+        // Assignment says to leave this method empty
     }
 }
