@@ -36,24 +36,19 @@ public class LibrarySystem {
     }
 
     public Book findBookByTitle(String title) {
-        // Assignment says to return null
         return null;
     }
 
     public User findUserByName(String name) {
-        // Assignment says to return null
         return null;
     }
 
     public void borrowBook(User user, Book book) throws UserOrBookDoesNotExistException {
-        // Assignment says to leave this method empty
     }
 
     public void extendLending(FacultyMember facultyMember, Book book, LocalDate newDueDate) throws UserOrBookDoesNotExistException {
-        // Assignment says to leave this method empty
     }
 
     public void returnBook(User user, Book book) throws UserOrBookDoesNotExistException {
-        // Assignment says to leave this method empty
     }
 }
