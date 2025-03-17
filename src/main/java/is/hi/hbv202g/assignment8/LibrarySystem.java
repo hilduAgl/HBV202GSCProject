@@ -36,19 +36,44 @@ public class LibrarySystem {
     }
 
     public Book findBookByTitle(String title) {
-        return null;
+        return null; 
     }
 
     public User findUserByName(String name) {
-        return null;
+        return null; 
     }
 
     public void borrowBook(User user, Book book) throws UserOrBookDoesNotExistException {
+        if (user == null || book == null) {
+            throw new UserOrBookDoesNotExistException("User or book does not exist.");
+        }
+        if (!users.contains(user) || !books.contains(book)) {
+            throw new UserOrBookDoesNotExistException("User or book does not exist in the system.");
+        }
     }
 
     public void extendLending(FacultyMember facultyMember, Book book, LocalDate newDueDate) throws UserOrBookDoesNotExistException {
+        if (facultyMember == null || book == null) {
+            throw new UserOrBookDoesNotExistException("Faculty member or book does not exist.");
+        }
+        if (!users.contains(facultyMember) || !books.contains(book)) {
+            throw new UserOrBookDoesNotExistException("Faculty member or book does not exist in the system.");
+        }
     }
 
     public void returnBook(User user, Book book) throws UserOrBookDoesNotExistException {
+        if (user == null || book == null) {
+            throw new UserOrBookDoesNotExistException("User or book does not exist.");
+        }
+        if (!users.contains(user) || !books.contains(book)) {
+            throw new UserOrBookDoesNotExistException("User or book does not exist in the system.");
+        }
+    }
+
+    public List<Book> getBooks() {
+        return books;
+    }
+    public List<User> getUsers() {
+        return users;
     }
 }
