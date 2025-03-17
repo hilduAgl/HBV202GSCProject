@@ -8,7 +8,7 @@ public class Book {
     private List<Author> authors; 
 
   
-    public Book(String title, String authorName) throws EmptyAuthorListException { 
+    public Book(String title, String authorName) throws EmptyAuthorListException {
         if (authorName == null || authorName.trim().isEmpty()) {
             throw new EmptyAuthorListException("Author name cannot be empty."); 
         }
@@ -41,12 +41,13 @@ public class Book {
 
     public void setAuthors(List<Author> authors) throws EmptyAuthorListException {
         if (authors == null || authors.isEmpty()) {
-            throw new EmptyAuthorListException("Author list cannot be empty.");
+            throw new EmptyAuthorListException("Author list cannot be empty."); 
         }
         this.authors = new ArrayList<>(authors);
     }
 
-    public void addAuthor(Author author) {
+  
+    public void addAuthor(Author author) { 
         if (this.authors == null) {
             this.authors = new ArrayList<>();
         }
