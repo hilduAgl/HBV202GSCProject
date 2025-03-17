@@ -76,7 +76,7 @@ public class LibrarySystemTest {
     }
     
     @Test
-    public void testBorrowAndReturnBook() {
+    public void testBorrowAndReturnBook() throws UserOrBookDoesNotExistException {
         LibrarySystem system = new LibrarySystem();
         
         // Add some users and books
@@ -90,21 +90,50 @@ public class LibrarySystemTest {
         // Borrow
         system.borrowBook(alice, cleanCode);
         
-        // Optionally, you might want a method to check if a book is currently borrowed.
-        // For demonstration, let's check if we can forcibly 'return' it.
         // Return
         system.returnBook(alice, cleanCode);
-        
-        // If you had a method like 'isBookLentOut()', you could assert it is false now.
-        // For example, if you implemented it, you'd do:
-        //   assertFalse(system.isBookLentOut(cleanCode));
     }
 
-    // Example test to show how a faculty member can extend the due date
-    // (This assumes your 'extendLending' method updates the dueDate properly
-    //  only for the correct faculty member.)
+    @Test(expected = UserOrBookDoesNotExistException.class)
+    public void testBorrowNonExistentBook() throws UserOrBookDoesNotExistException {
+        LibrarySystem system = new LibrarySystem();
+        
+        // Add a user but no book
+        system.addStudentUser("Alice", true);
+        
+        // Try to borrow a non-existent book
+        User alice = system.findUserByName("Alice");
+        Book nonExistentBook = null;
+        try {
+            nonExistentBook = new Book("Non-Existent Book", "Unknown Author");
+        } catch (EmptyAuthorListException e) {
+            fail("Unexpected EmptyAuthorListException: " + e.getMessage());
+        }
+        
+        system.borrowBook(alice, nonExistentBook);
+    }
+
+    @Test(expected = UserOrBookDoesNotExistException.class)
+    public void testReturnNonExistentBook() throws UserOrBookDoesNotExistException {
+        LibrarySystem system = new LibrarySystem();
+        
+        // Add a user but no book
+        system.addStudentUser("Alice", true);
+        
+        // Try to return a non-existent book
+        User alice = system.findUserByName("Alice");
+        Book nonExistentBook = null;
+        try {
+            nonExistentBook = new Book("Non-Existent Book", "Unknown Author");
+        } catch (EmptyAuthorListException e) {
+            fail("Unexpected EmptyAuthorListException: " + e.getMessage());
+        }
+        
+        system.returnBook(alice, nonExistentBook);
+    }
+
     @Test
-    public void testExtendLendingByFaculty() {
+    public void testExtendLendingByFaculty() throws UserOrBookDoesNotExistException {
         LibrarySystem system = new LibrarySystem();
         
         // Add a faculty user and a book
@@ -121,7 +150,25 @@ public class LibrarySystemTest {
         // Extend the lending
         LocalDate newDueDate = LocalDate.now().plusDays(90);
         system.extendLending((FacultyMember) bob, advJava, newDueDate);
-        
+    }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testExtendLendingWithInvalidDate() throws UserOrBookDoesNotExistException {
+        LibrarySystem system = new LibrarySystem();
+        
+        // Add a faculty user and a book
+        system.addFacultyMemberUser("Bob", "Computer Science");
+        system.addBookWithTitleAndNameOfSingleAuthor("Advanced Java", "Some Author");
+        
+        // Retrieve them
+        User bob = system.findUserByName("Bob");
+        Book advJava = system.findBookByTitle("Advanced Java");
+        
+        // Borrow the book
+        system.borrowBook(bob, advJava);
+        
+        // Try to extend the lending with an invalid date
+        LocalDate invalidDueDate = LocalDate.now().minusDays(10);
+        system.extendLending((FacultyMember) bob, advJava, invalidDueDate);
     }
 }
