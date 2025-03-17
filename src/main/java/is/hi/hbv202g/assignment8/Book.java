@@ -9,7 +9,8 @@ public class Book {
     private List<Author> authors; // 1..n authors
 
     // +Book(String title, String authorName): ctor
-    public Book(String title, String authorName) throws EmptyAuthorListException {
+    // No "throws" in the signature, but we still can throw the runtime exception.
+    public Book(String title, String authorName) {
         if (authorName == null || authorName.trim().isEmpty()) {
             throw new EmptyAuthorListException("Author name cannot be empty.");
         }
@@ -19,12 +20,12 @@ public class Book {
     }
 
     // +Book(String title, List<Author> authors): ctor
-    public Book(String title, List<Author> authors) throws EmptyAuthorListException {
+    // Again, no "throws" in the signature.
+    public Book(String title, List<Author> authors) {
         if (authors == null || authors.isEmpty()) {
             throw new EmptyAuthorListException("Author list cannot be empty.");
         }
         this.title = title;
-        // Store a copy or directly assign the incoming list.
         this.authors = new ArrayList<>(authors);
     }
 
@@ -34,7 +35,7 @@ public class Book {
     }
 
     // +setAuthors(List<Author> authors): void
-    public void setAuthors(List<Author> authors) throws EmptyAuthorListException {
+    public void setAuthors(List<Author> authors) {
         if (authors == null || authors.isEmpty()) {
             throw new EmptyAuthorListException("Author list cannot be empty.");
         }
