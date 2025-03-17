@@ -45,11 +45,4 @@ public class Book {
         }
         this.authors = new ArrayList<>(authors);
     }
-
-    public void addAuthor(Author author) {
-        if (this.authors == null) {
-            this.authors = new ArrayList<>();
-        }
-        this.authors.add(author);
-    }
 }
