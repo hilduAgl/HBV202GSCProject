@@ -4,7 +4,7 @@ public class Student extends User {
     private boolean feePaid;
 
     public Student(String name, boolean feePaid) {
-        super(name);         // call superclass constructor
+        super(name);      
         this.feePaid = feePaid;
     }
 
