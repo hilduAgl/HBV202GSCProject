@@ -3,6 +3,7 @@ package is.hi.hbv202g.assignment8;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LibrarySystem {
     private List<Book> books;
@@ -75,5 +76,54 @@ public class LibrarySystem {
     }
     public List<User> getUsers() {
         return users;
+    }
+
+    // Method to list all books
+    public void listBooks() {
+        if (books.isEmpty()) {
+            System.out.println("No books available in the library.");
+        } else {
+            System.out.println("Books in the library:");
+            for (Book book : books) {
+                System.out.println("- " + book.getTitle() + " by " + book.getAuthors().stream().map(Author::getName).collect(Collectors.joining(", ")));
+            }
+        }
+    }
+
+    // Method to list all users
+    public void listUsers() {
+        if (users.isEmpty()) {
+            System.out.println("No users registered.");
+        } else {
+            System.out.println("Users in the system:");
+            for (User user : users) {
+                System.out.println("- " + user.getName());
+            }
+        }
+    }
+
+    // Method to borrow a book
+    public void borrowBook(String userName, String bookTitle) {
+        User user = findUserByName(userName);
+        Book book = findBookByTitle(bookTitle);
+        try {
+            borrowBook(user, book);
+            lendings.add(new Lending(book, user));
+            System.out.println(user.getName() + " borrowed " + book.getTitle());
+        } catch (UserOrBookDoesNotExistException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    // Method to return a book
+    public void returnBook(String userName, String bookTitle) {
+        User user = findUserByName(userName);
+        Book book = findBookByTitle(bookTitle);
+        try {
+            returnBook(user, book);
+            System.out.println(user.getName() + " returned " + book.getTitle());
+        } catch (UserOrBookDoesNotExistException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 }
