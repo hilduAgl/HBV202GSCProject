@@ -36,4 +36,8 @@ public class Lending {
     public void setUser(User user) { 
         this.user = user;
     }
+
+    public void extendDueDate(int extraDays) {
+        this.dueDate = this.dueDate.plusDays(extraDays);
+    }
 }

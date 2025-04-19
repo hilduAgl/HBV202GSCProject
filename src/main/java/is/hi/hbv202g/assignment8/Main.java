@@ -1,9 +1,15 @@
 package is.hi.hbv202g.assignment8;
+
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         LibrarySystem librarySystem = new LibrarySystem();
+        LibraryUI libraryUI = new LibraryUI();
+
+        // Register the UI as an observer
+        librarySystem.addObserver(libraryUI);
+
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
 
