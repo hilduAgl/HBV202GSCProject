@@ -7,131 +7,138 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Unit tests for {@link LibrarySystem}.
+ */
 public class LibrarySystemTest {
+
+    /* ------------------------------------------------------------------
+     *  Repository‑update tests
+     * ------------------------------------------------------------------ */
 
     @Test
     public void testAddBookWithSingleAuthor() throws EmptyAuthorListException {
         LibrarySystem library = new LibrarySystem();
         library.addBookWithTitleAndNameOfSingleAuthor("Clean Code", "Robert C. Martin");
-        Book foundBook = library.findBookByTitle("Clean Code");
-        assertNull(foundBook); // Updated: findBookByTitle now returns null
+
+        Book found = library.findBookByTitle("Clean Code");
+        assertNotNull(found);
+        assertEquals("Clean Code", found.getTitle());
     }
 
     @Test
     public void testAddBookWithMultipleAuthors() throws EmptyAuthorListException {
         LibrarySystem library = new LibrarySystem();
-        List<Author> authors = new ArrayList<>();
-        authors.add(new Author("Martin Fowler"));
-        authors.add(new Author("Kent Beck"));
+
+        List<Author> authors = List.of(new Author("Martin Fowler"),
+                                       new Author("Kent Beck"));
         library.addBookWithTitleAndAuthorList("Refactoring", authors);
-        Book foundBook = library.findBookByTitle("Refactoring");
-        assertNull(foundBook); // Updated: findBookByTitle now returns null
+
+        Book found = library.findBookByTitle("Refactoring");
+        assertNotNull(found);
+        assertEquals(2, found.getAuthors().size());
     }
 
     @Test
     public void testAddStudentUser() {
         LibrarySystem library = new LibrarySystem();
         library.addStudentUser("Alice", true);
-        User foundUser = library.findUserByName("Alice");
-        assertNull(foundUser); // Updated: findUserByName now returns null
+
+        User found = library.findUserByName("Alice");
+        assertNotNull(found);
+        assertTrue(found instanceof Student);
     }
 
     @Test
     public void testAddFacultyMemberUser() {
         LibrarySystem library = new LibrarySystem();
         library.addFacultyMemberUser("Bob", "Computer Science");
-        User foundUser = library.findUserByName("Bob");
-        assertNull(foundUser); // Updated: findUserByName now returns null
+
+        User found = library.findUserByName("Bob");
+        assertNotNull(found);
+        assertTrue(found instanceof FacultyMember);
     }
 
+    /* ------------------------------------------------------------------
+     *  Lending workflow
+     * ------------------------------------------------------------------ */
+
     @Test
-    public void testBorrowAndReturnBook() throws EmptyAuthorListException, UserOrBookDoesNotExistException {
+    public void testBorrowAndReturnBook() throws Exception {
         LibrarySystem library = new LibrarySystem();
-    
-        // Create and add a Student user
-        Student alice = new Student("Alice", true);
         library.addStudentUser("Alice", true);
-    
-        // Create and add a Book
         library.addBookWithTitleAndNameOfSingleAuthor("Clean Code", "Robert C. Martin");
-    
-        // Retrieve the user and book from the LibrarySystem
-        User user = null;
-        for (User u : library.getUsers()) {
-            if (u.getName().equals("Alice")) {
-                user = u;
-                break;
-            }
-        }
-        assertNotNull(user); // Ensure the user was found
-    
-        Book book = null;
-        for (Book b : library.getBooks()) {
-            if (b.getTitle().equals("Clean Code")) {
-                book = b;
-                break;
-            }
-        }
-        assertNotNull(book); // Ensure the book was found
-    
-        // Borrow the book
-        library.borrowBook(user, book);
-    
-        // Return the book
-        library.returnBook(user, book);
+
+        User alice = library.findUserByName("Alice");
+        Book cleanCode = library.findBookByTitle("Clean Code");
+
+        library.borrowBook(alice, cleanCode);   // no exception
+        library.returnBook(alice, cleanCode);   // no exception
     }
 
     @Test(expected = UserOrBookDoesNotExistException.class)
-    public void testBorrowNonExistentBook() throws UserOrBookDoesNotExistException, EmptyAuthorListException {
+    public void testBorrowNonExistentBook() throws Exception {
         LibrarySystem library = new LibrarySystem();
         library.addStudentUser("Alice", true);
-        Book nonExistentBook = new Book("Non-Existent Book", "Unknown Author");
-        library.borrowBook(library.findUserByName("Alice"), nonExistentBook); // Updated: borrowBook is left empty
+
+        User alice = library.findUserByName("Alice");
+        Book ghost = new Book("Ghost Book", "Nobody");
+
+        library.borrowBook(alice, ghost);   // should now throw
     }
 
     @Test(expected = UserOrBookDoesNotExistException.class)
-    public void testReturnNonExistentBook() throws UserOrBookDoesNotExistException, EmptyAuthorListException {
+    public void testReturnNonExistentBook() throws Exception {
         LibrarySystem library = new LibrarySystem();
         library.addStudentUser("Alice", true);
-        Book nonExistentBook = new Book("Non-Existent Book", "Unknown Author");
-        library.returnBook(library.findUserByName("Alice"), nonExistentBook); // Updated: returnBook is left empty
+
+        User alice = library.findUserByName("Alice");
+        Book ghost = new Book("Ghost Book", "Nobody");
+
+        library.returnBook(alice, ghost);   // should throw
     }
+
     @Test
-    public void testExtendLending() throws EmptyAuthorListException, UserOrBookDoesNotExistException {
+    public void testExtendLending() throws Exception {
         LibrarySystem library = new LibrarySystem();
-    
-        // Create and add a FacultyMember user
-        FacultyMember bob = new FacultyMember("Bob", "Computer Science");
         library.addFacultyMemberUser("Bob", "Computer Science");
-    
-        // Create and add a Book
         library.addBookWithTitleAndNameOfSingleAuthor("Advanced Java", "Some Author");
-    
-        // Retrieve the book from the LibrarySystem
-        Book advJava = null;
-        for (Book book : library.getBooks()) {
-            if (book.getTitle().equals("Advanced Java")) {
-                advJava = book;
-                break;
-            }
-        }
-        assertNotNull(advJava); // Ensure the book was found
-    
-        // Retrieve the user from the LibrarySystem
-        User user = null;
-        for (User u : library.getUsers()) {
-            if (u.getName().equals("Bob")) {
-                user = u;
-                break;
-            }
-        }
-        assertNotNull(user); // Ensure the user was found
-    
-        // Borrow the book
-        library.borrowBook(user, advJava);
-    
-        // Extend the lending
-        LocalDate newDueDate = LocalDate.now().plusDays(90);
-        library.extendLending((FacultyMember) user, advJava, newDueDate);
+
+        FacultyMember bob = (FacultyMember) library.findUserByName("Bob");
+        Book advJava = library.findBookByTitle("Advanced Java");
+
+        library.borrowBook(bob, advJava);
+
+        LocalDate newDue = LocalDate.now().plusDays(90);
+        library.extendLending(bob, advJava, newDue);   // no exception
+    }
+
+    /* ------------------------------------------------------------------
+     *  Observer pattern
+     * ------------------------------------------------------------------ */
+
+    @Test
+    public void testObserverNotifications() throws Exception {
+        LibrarySystem library = new LibrarySystem();
+        List<Book> events = new ArrayList<>();
+
+        LibraryObserver observer = new LibraryObserver() {
+            @Override public void onBookBorrowed(Book b) { events.add(b); }
+            @Override public void onBookReturned(Book b){ events.add(b); }
+            @Override public void onNewBookAdded(Book b){ events.add(b); }
+        };
+        library.addObserver(observer);
+
+        library.addBookWithTitleAndNameOfSingleAuthor("DDD", "Eric Evans");
+        library.addStudentUser("Ann", true);
+
+        User ann = library.findUserByName("Ann");
+        Book ddd = library.findBookByTitle("DDD");
+
+        library.borrowBook(ann, ddd);
+        library.returnBook(ann, ddd);
+
+        assertEquals(3, events.size());   // added, borrowed, returned
+        assertTrue(events.contains(ddd));
     }
 }

@@ -5,221 +5,194 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Core business logic for the library.
+ * <p>
+ *  • maintains book &amp; user repositories<br>
+ *  • handles lending transactions<br>
+ *  • notifies {@link LibraryObserver}s via the Observer pattern
+ */
 public class LibrarySystem {
-    private List<Book> books;
-    private List<User> users;
-    private List<Lending> lendings;
-    private List<LibraryObserver> observers;
+
+    private final List<Book> books;
+    private final List<User> users;
+    private final List<Lending> lendings;
+    private final List<LibraryObserver> observers;
 
     public LibrarySystem() {
-        books = new ArrayList<>();
-        users = new ArrayList<>();
-        lendings = new ArrayList<>();
+        books     = new ArrayList<>();
+        users     = new ArrayList<>();
+        lendings  = new ArrayList<>();
         observers = new ArrayList<>();
     }
 
-    // Add an observer to be notified when books are borrowed, returned, or added
-    public void addObserver(LibraryObserver observer) {
-        observers.add(observer);
-    }
+    /* -------------------------------------------------- */
+    /* Observer maintenance                                */
+    /* -------------------------------------------------- */
+    public void addObserver(LibraryObserver o)    { observers.add(o);    }
+    public void removeObserver(LibraryObserver o) { observers.remove(o); }
 
-    // Remove an observer
-    public void removeObserver(LibraryObserver observer) {
-        observers.remove(observer);
-    }
+    private void notifyBookBorrowed(Book b) { observers.forEach(o -> o.onBookBorrowed(b)); }
+    private void notifyBookReturned(Book b) { observers.forEach(o -> o.onBookReturned(b)); }
+    private void notifyNewBookAdded(Book b) { observers.forEach(o -> o.onNewBookAdded(b)); }
 
-    // Notify observers when a book is borrowed
-    private void notifyBookBorrowed(Book book) {
-        for (LibraryObserver observer : observers) {
-            observer.onBookBorrowed(book);
+    /* -------------------------------------------------- */
+    /* Repository helpers                                 */
+    /* -------------------------------------------------- */
+    public void addBookWithTitleAndNameOfSingleAuthor(String title, String authorName)
+            throws EmptyAuthorListException {
+
+        if (findBookByTitle(title) != null) {
+            System.out.println("This book already exists in the library.");
+            return;
         }
-    }
-
-    // Notify observers when a book is returned
-    private void notifyBookReturned(Book book) {
-        for (LibraryObserver observer : observers) {
-            observer.onBookReturned(book);
-        }
-    }
-
-    // Notify observers when a new book is added
-    private void notifyNewBookAdded(Book book) {
-        for (LibraryObserver observer : observers) {
-            observer.onNewBookAdded(book);
-        }
-    }
-
-    // Add a book with a single author
-    public void addBookWithTitleAndNameOfSingleAuthor(String title, String authorName) throws EmptyAuthorListException {
-        // Prevent duplicate book titles
-        for (Book existingBook : books) {
-            if (existingBook.getTitle().equalsIgnoreCase(title)) {
-                System.out.println("This book already exists in the library.");
-                return;
-            }
-        }
-
         Book book = new Book(title, authorName);
         books.add(book);
-        notifyNewBookAdded(book);  // Notify observers when a new book is added
+        notifyNewBookAdded(book);
     }
 
-    // Add a book with a list of authors
-    public void addBookWithTitleAndAuthorList(String title, List<Author> authors) throws EmptyAuthorListException {
+    public void addBookWithTitleAndAuthorList(String title, List<Author> authors)
+            throws EmptyAuthorListException {
+
+        if (findBookByTitle(title) != null) {
+            System.out.println("This book already exists in the library.");
+            return;
+        }
         Book book = new Book(title, authors);
         books.add(book);
-        notifyNewBookAdded(book);  // Notify observers when a new book is added
+        notifyNewBookAdded(book);
     }
 
-    // Add a student user
     public void addStudentUser(String name, boolean feePaid) {
-        Student student = new Student(name, feePaid);
-        users.add(student);
+        if (findUserByName(name) == null) users.add(new Student(name, feePaid));
     }
 
-    // Add a faculty member user
     public void addFacultyMemberUser(String name, String department) {
-        FacultyMember facultyMember = new FacultyMember(name, department);
-        users.add(facultyMember);
+        if (findUserByName(name) == null) users.add(new FacultyMember(name, department));
     }
 
-    // Find a book by title
     public Book findBookByTitle(String title) {
-        for (Book book : books) {
-            if (book.getTitle().equalsIgnoreCase(title)) {
-                return book;
-            }
-        }
-        return null; // Return null if book is not found
+        return books.stream()
+                    .filter(b -> b.getTitle().equalsIgnoreCase(title))
+                    .findFirst()
+                    .orElse(null);
     }
 
-    // Find a user by name
     public User findUserByName(String name) {
-        for (User user : users) {
-            if (user.getName().equalsIgnoreCase(name)) {
-                return user;
-            }
-        }
-        return null; // Return null if user is not found
+        return users.stream()
+                    .filter(u -> u.getName().equalsIgnoreCase(name))
+                    .findFirst()
+                    .orElse(null);
     }
 
-    // Borrow a book
-    public void borrowBook(User user, Book book) throws UserOrBookDoesNotExistException {
-        if (user == null || book == null) {
-            throw new UserOrBookDoesNotExistException("User or book does not exist.");
-        }
+    /* -------------------------------------------------- */
+    /* Lending operations                                 */
+    /* -------------------------------------------------- */
 
-        // Prevent borrowing the same book twice
-        for (Lending lending : lendings) {
-            if (lending.getBook().equals(book)) {
-                throw new UserOrBookDoesNotExistException("This book is already borrowed.");
-            }
+    /**
+     * Borrow a catalogued book with a registered user.
+     */
+    public void borrowBook(User user, Book book) throws UserOrBookDoesNotExistException {
+
+        if (user == null || book == null || !users.contains(user) || !books.contains(book)) {
+            throw new UserOrBookDoesNotExistException("User or book does not exist in the system.");
+        }
+        if (lendings.stream().anyMatch(l -> l.getBook().equals(book))) {
+            throw new UserOrBookDoesNotExistException("This book is already borrowed.");
         }
 
         lendings.add(new Lending(book, user));
-        notifyBookBorrowed(book); // Notify observers when a book is borrowed
+        notifyBookBorrowed(book);
     }
 
-    // Return a book
-    public void returnBook(User user, Book book) throws UserOrBookDoesNotExistException {
-        if (user == null || book == null) {
-            throw new UserOrBookDoesNotExistException("User or book does not exist.");
-        }
-
-        boolean found = false;
-        for (Lending lending : lendings) {
-            if (lending.getBook().equals(book) && lending.getUser().equals(user)) {
-                lendings.remove(lending);
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            throw new UserOrBookDoesNotExistException("The book was not borrowed by this user.");
-        }
-
-        notifyBookReturned(book); // Notify observers when a book is returned
-    }
-
-    // List all books in the system
-    public void listBooks() {
-        if (books.isEmpty()) {
-            System.out.println("No books available in the library.");
-        } else {
-            System.out.println("Books in the library:");
-            for (Book book : books) {
-                System.out.println("- " + book.getTitle() + " by " + book.getAuthors().stream().map(Author::getName).collect(Collectors.joining(", ")));
-            }
-        }
-    }
-
-    // List all users in the system
-    public void listUsers() {
-        if (users.isEmpty()) {
-            System.out.println("No users registered.");
-        } else {
-            System.out.println("Users in the system:");
-            for (User user : users) {
-                System.out.println("- " + user.getName());
-            }
-        }
-    }
-
-    // Borrow a book by title and user name
+    /** Convenience wrapper (resolves names then delegates). */
     public void borrowBook(String userName, String bookTitle) {
         User user = findUserByName(userName);
         Book book = findBookByTitle(bookTitle);
-
         try {
             borrowBook(user, book);
-            lendings.add(new Lending(book, user)); // Add lending entry
             System.out.println(user.getName() + " borrowed " + book.getTitle());
         } catch (UserOrBookDoesNotExistException e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
-    // Return a book by title and user name
+    /**
+     * Return a book previously borrowed.
+     */
+    public void returnBook(User user, Book book) throws UserOrBookDoesNotExistException {
+
+        if (user == null || book == null || !users.contains(user) || !books.contains(book)) {
+            throw new UserOrBookDoesNotExistException("User or book does not exist in the system.");
+        }
+
+        Lending lending = lendings.stream()
+                                  .filter(l -> l.getBook().equals(book) && l.getUser().equals(user))
+                                  .findFirst()
+                                  .orElse(null);
+
+        if (lending == null) {
+            throw new UserOrBookDoesNotExistException("The book was not borrowed by this user.");
+        }
+
+        lendings.remove(lending);
+        notifyBookReturned(book);
+    }
+
     public void returnBook(String userName, String bookTitle) {
         User user = findUserByName(userName);
         Book book = findBookByTitle(bookTitle);
-
         try {
-            returnBook(user, book); // Return book logic
+            returnBook(user, book);
             System.out.println(user.getName() + " returned " + book.getTitle());
         } catch (UserOrBookDoesNotExistException e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
-    // Extend the lending period for a faculty member
-    public void extendLending(FacultyMember facultyMember, Book book, LocalDate newDueDate) throws UserOrBookDoesNotExistException {
-        if (facultyMember == null || book == null) {
-            throw new UserOrBookDoesNotExistException("Faculty member or book does not exist.");
-        }
-        if (!users.contains(facultyMember) || !books.contains(book)) {
+    public void extendLending(FacultyMember facultyMember, Book book, LocalDate newDueDate)
+            throws UserOrBookDoesNotExistException {
+
+        if (facultyMember == null || book == null || !users.contains(facultyMember) || !books.contains(book)) {
             throw new UserOrBookDoesNotExistException("Faculty member or book does not exist in the system.");
         }
 
-        // Find the lending entry and extend the due date
-        for (Lending lending : lendings) {
-            if (lending.getBook().equals(book) && lending.getUser().equals(facultyMember)) {
-                lending.extendDueDate(newDueDate.getDayOfMonth());
-                System.out.println("Lending extended for " + book.getTitle());
-                return;
-            }
+        Lending lending = lendings.stream()
+                                  .filter(l -> l.getBook().equals(book) && l.getUser().equals(facultyMember))
+                                  .findFirst()
+                                  .orElse(null);
+
+        if (lending == null) {
+            throw new UserOrBookDoesNotExistException("This lending does not exist.");
         }
-
-        throw new UserOrBookDoesNotExistException("This lending does not exist.");
+        lending.setDueDate(newDueDate);
     }
 
-    // Getter methods
-    public List<Book> getBooks() {
-        return books;
+    /* -------------------------------------------------- */
+    /* Diagnostic helpers                                 */
+    /* -------------------------------------------------- */
+    public void listBooks() {
+        if (books.isEmpty()) {
+            System.out.println("No books available in the library.");
+            return;
+        }
+        System.out.println("Books in the library:");
+        books.forEach(b -> System.out.println("- " + b.getTitle() + " by " +
+                b.getAuthors().stream().map(Author::getName).collect(Collectors.joining(", "))));
     }
 
-    public List<User> getUsers() {
-        return users;
+    public void listUsers() {
+        if (users.isEmpty()) {
+            System.out.println("No users registered.");
+            return;
+        }
+        System.out.println("Users in the system:");
+        users.forEach(u -> System.out.println("- " + u.getName()));
     }
+
+    /* -------------------------------------------------- */
+    /* Getters (used by unit tests)                       */
+    /* -------------------------------------------------- */
+    public List<Book> getBooks() { return books; }
+    public List<User> getUsers() { return users; }
 }
