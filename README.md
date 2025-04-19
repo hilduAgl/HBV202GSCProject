@@ -75,9 +75,9 @@ This project is released under the **MIT License**.  See [`LICENSE`](LICENSE) fo
 
 ---
 ## 👥 Authors
-* <student A>
-* <student B>
+* Hildur Agla Ottadóttir
+* Kristófer Birgir Hjörleifsson
 
 ---
-**Happy reading – and enjoy the Library System!**
+**Happy reading and enjoy the Library System!**
 
