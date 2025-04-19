@@ -3,16 +3,27 @@ package is.hi.hbv202g.assignment8;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * CompositeBook represents an omnibus made up of several Book volumes.
+ * It is an implementation of the Composite design pattern.
+ */
 public class CompositeBook extends Book {
-    private List<Book> volumes;
-    private LibrarySystem librarySystem; // Reference to the library system
 
+    private final List<Book> volumes;
+    private final LibrarySystem librarySystem;
+
+    /**
+     * Constructs an omnibus.  We pass a harmless default author
+     * ("Various Authors") to the super‑constructor so the non‑empty
+     * author constraint in {@link Book} is satisfied.
+     */
     public CompositeBook(String title, LibrarySystem librarySystem) throws EmptyAuthorListException {
-        super(title, "");
-        this.librarySystem = librarySystem; // Assign the library system
-        volumes = new ArrayList<>();
+        super(title, "Various Authors");
+        this.librarySystem = librarySystem;
+        this.volumes = new ArrayList<>();
     }
 
+    /** Adds a single volume to the omnibus. */
     public void addVolume(Book book) {
         volumes.add(book);
     }
@@ -26,12 +37,14 @@ public class CompositeBook extends Book {
         return volumes;
     }
 
-    // Overriding behavior for borrowing a composite book
+    /**
+     * Borrowing the composite forwards the borrow operation to each contained
+     * volume through the {@link LibrarySystem}.
+     */
     @Override
     public void borrow(User user) throws UserOrBookDoesNotExistException {
         System.out.println("Borrowing omnibus: " + getTitle());
         for (Book book : volumes) {
-            // Borrow each volume of the omnibus using the library system
             librarySystem.borrowBook(user, book);
         }
     }
