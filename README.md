@@ -53,7 +53,7 @@ UML/
 run.sh                                 (convenience launcher)
 ```
 
-The full class diagram (including Observer & Composite relationships) is rendered in [`docs/design/uml.png`](docs/design/uml.png).
+The full class diagram (including Observer & Composite relationships) is rendered in [`Class Diagram`](ClassDiagramSCProject.png).
 
 ---
 ## 📐 Design patterns in use
