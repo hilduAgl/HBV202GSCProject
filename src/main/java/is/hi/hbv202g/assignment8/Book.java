@@ -55,7 +55,6 @@ public class Book {
     }
 
     public void borrow(User user) throws UserOrBookDoesNotExistException {
-        // This could be a simple implementation that does nothing, or you can log borrowing info.
         System.out.println("Borrowing book: " + title);
     }
 }
