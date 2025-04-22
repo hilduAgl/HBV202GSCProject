@@ -19,7 +19,7 @@ A small yet complete **library‑management console application** built as the t
 ## 🚀 Quick‑start
 ```bash
 # clone and enter the repo
-git clone <repo-url>
+git clone https://github.com/hilduAgl/HBV202GSCProject.git
 cd HBV202GSCProject
 
 # run the tests
